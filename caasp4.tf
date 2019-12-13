@@ -115,6 +115,14 @@ resource "azurerm_private_dns_a_record" "caasp4nodesprivate" {
   records             = ["${azurerm_network_interface.caasp4tf-nics[count.index].ip_configuration[0].private_ip_address}"]
   count               = length(var.list-nodes)
 }
+# add *.cf for internal dns to master IP.
+resource "azurerm_private_dns_a_record" "caasp4cfprivate" {
+  name                = "*.cf"
+  zone_name           = azurerm_private_dns_zone.jmllabsuse-private.name
+  resource_group_name = azurerm_private_dns_zone.jmllabsuse-private.resource_group_name
+  ttl                 = 300
+  records             = ["${azurerm_network_interface.caasp4tf-nics[1].ip_configuration[0].private_ip_address}"]
+}
 
 
 # Generate random text for a unique storage account name
