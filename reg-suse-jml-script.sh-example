@@ -1,0 +1,20 @@
+!/bin/bash
+# Activate the suse caasp packages etc
+sudo SUSEConnect -r <yoursub> -e <youremail>
+sudo SUSEConnect -p sle-module-containers/15.1/x86_64 -r <yoursub>
+sudo SUSEConnect -p caasp/4.0/x86_64 -r <yoursub>
+sudo zypper up -y
+sudo zypper in -y -t pattern SUSE-CaaSP-Management 
+# Install the ssh key pair
+cat <<EOF >> /home/username/.ssh/id_rsa
+-----BEGIN RSA PRIVATE KEY-----
+sLxU6E/66eOzvDZeS104L6p7s56Tty2ZojgwraU07kr4nVqwJhhenA==
+-----END RSA PRIVATE KEY-----
+EOF
+cat <<EOF >> /home/username/.ssh/id_rsa.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDbOQebEpckSaJBSXjP2YuG0LLNFz0JEsrgjvkfcQv1ni26LTMZdOAkE09ZFXNfWQaKJLWS7wiDWCvngEXUSOdvtBTkq+KaRxdtQPsScUXbrZolYZTETLTKn2nvzr47BeVUMPvtmYX9APN1JsVUxYOBVxZmcljKulsKp1orx0V5+m2eAGZX8S3t+HAx5XP3kW8iiK9PLCVrtY+iO2grJw+DRW6BA7j4R6dVWQnjEyf6BtIP6ZLdOqnaKTTwk37JRv7KBoP7LMP2D4vA1fAh8oJLn09U5smXjJnqCigwwfm3coewelfxP22DsuAfID0KbMCs34MVBwt+QzUvqr+Fqz4T jmlambert@linuxsles
+EOF
+
+chmod 600 /home/username/.ssh/id_rsa
+
+

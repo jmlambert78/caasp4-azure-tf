@@ -1,0 +1,27 @@
+# Configure the Microsoft Azure Provider
+provider "azurerm" {
+    subscription_id = "********-****-****-****-************"
+    client_id       = "********-****-****-****-************"
+    client_secret   = "********-****-****-****-************"
+    tenant_id       = "********-****-****-****-************"
+}
+variable "azure-region"{
+  default = "westeurope"
+}
+variable "ssh_public_keys" {
+  type = string
+  default = <<EOF
+ssh-rsa AAAAB3.....
+ssh-rsa AAAAB3.....
+EOF
+}
+variable "ssh_private_key-jml" {
+  type = string
+  default = <<EOF
+-----BEGIN RSA PRIVATE KEY-----
+...
+-----END RSA PRIVATE KEY-----
+
+EOF
+
+}
