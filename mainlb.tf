@@ -1,6 +1,6 @@
 
 resource "azurerm_resource_group" "caasp4tf-lb-rg" {
-  name     = "caasp4tf-lb-rg"
+  name     = "lb-${var.caasp4_rg_name}"
   location = var.azure-region
 }
 

@@ -3,3 +3,4 @@ terraform.tfstate
 terraform.tfstate.backup
 .terraform
 reg-suse-jml-script.sh
+setenvs.sh

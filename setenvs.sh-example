@@ -1,0 +1,8 @@
+export    TF_VAR_subscription_id="****************"
+export    TF_VAR_client_id="***************"
+export    TF_VAR_client_secret="***********"
+export    TF_VAR_tenant_id="*************"
+#file containing a public key set to inject in VMs
+export    TF_VAR_ssh_public_keys="keyset.pub"
+#file containing a private ssh key to remotely access
+export    TF_VAR_ssh_private_key_jml="~/.ssh/id_rsa"

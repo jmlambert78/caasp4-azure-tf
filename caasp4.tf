@@ -1,6 +1,6 @@
 # Create a resource group if it doesn’t exist
 resource "azurerm_resource_group" "caasp4tf-eu-rg" {
-    name     = "caasp4tf-eu2-rg"
+    name     = var.caasp4_rg_name
     location = var.azure-region
     tags = {
         environment = "Terraform Demo"
@@ -53,7 +53,7 @@ output "public_ip_address-admin" {
   value = azurerm_public_ip.caasp4tf-publicip.*.ip_address
 }
 resource "azurerm_dns_a_record" "caasp4nodes" {
-  name                = "caasp4-${var.list-nodes[count.index]}.eu2"
+  name                = "caasp4-${var.list-nodes[count.index]}.${var.caasp4_dns_prefix}"
   zone_name           = azurerm_dns_zone.jmllabsuse.name
   resource_group_name = azurerm_dns_zone.jmllabsuse.resource_group_name
   ttl                 = 300
@@ -108,7 +108,7 @@ resource "azurerm_network_interface" "caasp4tf-nics" {
 }
 
 resource "azurerm_private_dns_a_record" "caasp4nodesprivate" {
-  name                = "caasp4-${var.list-nodes[count.index]}.eu2"
+  name                = "caasp4-${var.list-nodes[count.index]}.${var.caasp4_dns_prefix}"
   zone_name           = azurerm_private_dns_zone.jmllabsuse-private.name
   resource_group_name = azurerm_private_dns_zone.jmllabsuse-private.resource_group_name
   ttl                 = 300
@@ -180,7 +180,7 @@ resource "azurerm_virtual_machine" "caasp4tf-VMs" {
         disable_password_authentication = true
         ssh_keys {
             path     = "/home/jmlambert/.ssh/authorized_keys"
-            key_data = var.ssh_public_keys
+            key_data = file(var.ssh_public_keys)
         }
     }
 
@@ -200,7 +200,7 @@ connection {
     type     = "ssh"
     user     = "jmlambert"
     host     =  azurerm_public_ip.caasp4tf-publicip[count.index].ip_address
-    private_key = var.ssh_private_key-jml
+    private_key = file(var.ssh_private_key_jml)
   }
   }
     provisioner "file" {
@@ -211,7 +211,7 @@ connection {
       type     = "ssh"
       user     = "jmlambert"
       host     =  azurerm_public_ip.caasp4tf-publicip[count.index].ip_address
-      private_key = var.ssh_private_key-jml
+      private_key = file(var.ssh_private_key_jml)
       }
     }
     provisioner "file" {
@@ -222,7 +222,7 @@ connection {
       type     = "ssh"
       user     = "jmlambert"
       host     =  azurerm_public_ip.caasp4tf-publicip[count.index].ip_address
-      private_key = var.ssh_private_key-jml
+      private_key = file(var.ssh_private_key_jml)
       }
     }
     provisioner "file" {
@@ -233,7 +233,7 @@ connection {
       type     = "ssh"
       user     = "jmlambert"
       host     =  azurerm_public_ip.caasp4tf-publicip[count.index].ip_address
-      private_key = var.ssh_private_key-jml
+      private_key = file(var.ssh_private_key_jml)
       }
     }
 
@@ -242,13 +242,12 @@ connection {
     inline = [
       "chmod +x /tmp/script.sh",      "/tmp/script.sh args",
       "chmod +x /tmp/swap.sh",        "/tmp/swap.sh",
-      "chmod +x /tmp/nfsserver.sh",   "sudo /tmp/nfsserver.sh",
     ]
     connection {
        type     = "ssh"
        user     = "jmlambert"
        host     = azurerm_public_ip.caasp4tf-publicip[count.index].ip_address
-       private_key = var.ssh_private_key-jml
+       private_key = file(var.ssh_private_key_jml)
 
        }
     }
@@ -290,6 +289,41 @@ resource "azurerm_virtual_machine_data_disk_attachment" "caasp4-admin-datadisks"
   lun                = "10"
   caching            = "ReadWrite"
   count = 1
+}
+# Mount disks & Launch the NFS Server on Admin node.
+resource "null_resource" "remote-exec-admin" {
+      provisioner "remote-exec" {
+      connection {
+      agent       = false
+      timeout     = "30m"
+      user     = "jmlambert"
+      host     = azurerm_public_ip.caasp4tf-publicip[0].ip_address
+      private_key = file(var.ssh_private_key_jml)
+    }
+  
+    inline = [
+      "chmod +x /tmp/nfsserver.sh",   "sudo /tmp/nfsserver.sh"
+    ]
+    }
+    depends_on = [azurerm_virtual_machine_data_disk_attachment.caasp4-admin-datadisks[0]]
+}
+# Mount data disks on nodes.
+resource "null_resource" "remote-exec-nodes" {
+provisioner "remote-exec" {
+connection {
+      agent       = false
+      timeout     = "30m"
+      user     = "jmlambert"
+      host     = azurerm_public_ip.caasp4tf-publicip[2+count.index].ip_address
+      private_key = file(var.ssh_private_key_jml)
+    }
+    inline = [
+      "chmod +x /tmp/nfsserver.sh",   "sudo /tmp/nfsserver.sh"
+    ]
+}
+    count = 2
+    depends_on = [azurerm_virtual_machine_data_disk_attachment.caasp4-datadisks]
+    
 }
 
 
