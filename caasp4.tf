@@ -1,4 +1,4 @@
-# Create a resource group if it doesn’t exist
+# Create a resource group if it does not exist
 resource "azurerm_resource_group" "caasp4tf-eu-rg" {
     name     = var.caasp4_rg_name
     location = var.azure-region
@@ -72,7 +72,6 @@ resource "azurerm_network_security_group" "caasp4tf-nsg" {
 }
 variable "list-nsg-ports" {
    default = ["22","80","443","6443","7443","8443","4240","8472","10250","10256","30000-32767","2379-2380","2397","2793","2222"]
-
 }
 resource "azurerm_network_security_rule" "caasp4-nsg-rules" {
   name                        = "caasp4-${var.list-nsg-ports[count.index]}"
@@ -322,8 +321,5 @@ connection {
     ]
 }
     count = 2
-    depends_on = [azurerm_virtual_machine_data_disk_attachment.caasp4-datadisks]
-    
+    depends_on = [azurerm_virtual_machine_data_disk_attachment.caasp4-datadisks]    
 }
-
-

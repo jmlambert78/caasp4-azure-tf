@@ -1,3 +1,7 @@
+# List of lb Fports to set as lb rules & lb probes
+variable "lb-list-ports"{
+ default =["22","443","6443","8443","80","2222","2793"] 
+}
 
 resource "azurerm_resource_group" "caasp4tf-lb-rg" {
   name     = "lb-${var.caasp4_rg_name}"
@@ -17,13 +21,22 @@ resource "azurerm_public_ip" "caasp4tf-ip-lb" {
 output "public_ip_address-lb" {
   value = data.azurerm_public_ip.caasp4tf-ip-lb.ip_address
 }
-resource "azurerm_dns_a_record" "lbdomain" {
-  name                = "caasp4-lbdomain"
+resource "azurerm_dns_a_record" "lb-kube" {
+  name                = "kube.cf1"
   zone_name           = azurerm_dns_zone.jmllabsuse.name
   resource_group_name = azurerm_dns_zone.jmllabsuse.resource_group_name
   ttl                 = 300
   records             = ["${data.azurerm_public_ip.caasp4tf-ip-lb.ip_address}"]
 }
+resource "azurerm_dns_a_record" "lb_cf" {
+  name                = "*.cf1.private"
+  zone_name           = azurerm_dns_zone.jmllabsuse.name
+  resource_group_name = azurerm_dns_zone.jmllabsuse.resource_group_name
+  ttl                 = 300
+  records             = ["${data.azurerm_public_ip.caasp4tf-ip-lb.ip_address}"]
+}
+
+
 resource "azurerm_lb" "caasp4-lb" {
   name                = "CaaSP4LoadBalancer"
   location            = var.azure-region
@@ -47,27 +60,23 @@ resource "azurerm_network_interface_backend_address_pool_association" "master" {
   backend_address_pool_id = azurerm_lb_backend_address_pool.caasp4-lb-backpool.id
 }
 
-variable "list-ports"{
- default =["22","443","6443","8443","80","2222","2793"] 
-}
-
 resource "azurerm_lb_rule" "lb-rules" {
   resource_group_name            = azurerm_resource_group.caasp4tf-lb-rg.name
   loadbalancer_id                = azurerm_lb.caasp4-lb.id
-  name                           = "LBRule-${var.list-ports[count.index]}"
+  name                           = "LBRule-${var.lb-list-ports[count.index]}"
   protocol                       = "Tcp"
-  frontend_port                  = var.list-ports[count.index]
-  backend_port                   = var.list-ports[count.index]
+  frontend_port                  = var.lb-list-ports[count.index]
+  backend_port                   = var.lb-list-ports[count.index]
   backend_address_pool_id        = azurerm_lb_backend_address_pool.caasp4-lb-backpool.id
   frontend_ip_configuration_name = "PublicIPAddress"
-  count                          = length(var.list-ports)
+  count                          = length(var.lb-list-ports)
 }
 resource "azurerm_lb_probe" "lb-probes" {
   resource_group_name = azurerm_resource_group.caasp4tf-lb-rg.name
   loadbalancer_id     = azurerm_lb.caasp4-lb.id
-  name                = "LB-probe-${var.list-ports[count.index]}"
-  port                = var.list-ports[count.index]
-  count               = length(var.list-ports)
+  name                = "LB-probe-${var.lb-list-ports[count.index]}"
+  port                = var.lb-list-ports[count.index]
+  count               = length(var.lb-list-ports)
 }
 
 

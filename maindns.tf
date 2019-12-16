@@ -4,5 +4,5 @@ resource "azurerm_dns_zone" "jmllabsuse" {
 }
 resource "azurerm_private_dns_zone" "jmllabsuse-private" {
   name                = "private.jmllabsuse.com"
-  resource_group_name = var.caasp4_rg_name
+  resource_group_name = azurerm_resource_group.caasp4tf-eu-rg.name
 }
