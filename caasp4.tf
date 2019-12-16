@@ -2,9 +2,6 @@
 resource "azurerm_resource_group" "caasp4tf-eu-rg" {
     name     = var.caasp4_rg_name
     location = var.azure-region
-    tags = {
-        environment = "Terraform Demo"
-    }
 }
 
 # Create virtual network
@@ -13,9 +10,6 @@ resource "azurerm_virtual_network" "caasp4tf-network" {
     address_space       = ["10.0.0.0/16"]
     location            =  var.azure-region
     resource_group_name = azurerm_resource_group.caasp4tf-eu-rg.name
-    tags = {
-        environment = "Terraform Demo"
-    }
 }
 # to declare the private dns to the vnet
 resource "azurerm_private_dns_zone_virtual_network_link" "privatejmllab" {
@@ -43,10 +37,7 @@ resource "azurerm_public_ip" "caasp4tf-publicip" {
     location                     =  var.azure-region
     resource_group_name          = azurerm_resource_group.caasp4tf-eu-rg.name
     allocation_method            = "Static"
-    tags = {
-        environment = "Terraform Demo"
-    }
-	count                        = length(var.list-nodes)
+    count                        = length(var.list-nodes)
 }
 
 output "public_ip_address-admin" {
@@ -66,9 +57,6 @@ resource "azurerm_network_security_group" "caasp4tf-nsg" {
     name                = "caasp4tf-NetworkSecurityGroup"
     location            =  var.azure-region
     resource_group_name = azurerm_resource_group.caasp4tf-eu-rg.name
-    tags = {
-        environment = "Terraform Demo"
-    }
 }
 variable "list-nsg-ports" {
    default = ["22","80","443","6443","7443","8443","4240","8472","10250","10256","30000-32767","2379-2380","2397","2793","2222"]
@@ -101,9 +89,6 @@ resource "azurerm_network_interface" "caasp4tf-nics" {
         public_ip_address_id          = azurerm_public_ip.caasp4tf-publicip[count.index].id
     }
     count                     = length(var.list-nodes)
-    tags = {
-        environment = "Terraform Demo"
-    }
 }
 
 resource "azurerm_private_dns_a_record" "caasp4nodesprivate" {
@@ -142,9 +127,6 @@ resource "azurerm_storage_account" "caasp4tf-storageaccount" {
     account_tier                = "Standard"
     account_replication_type    = "LRS"
 
-    tags = {
-        environment = "Terraform Demo"
-    }
 }
 # Create virtual machines
 resource "azurerm_virtual_machine" "caasp4tf-VMs" {
@@ -188,9 +170,6 @@ resource "azurerm_virtual_machine" "caasp4tf-VMs" {
         storage_uri = azurerm_storage_account.caasp4tf-storageaccount.primary_blob_endpoint
     }
 
-    tags = {
-        environment = "Terraform Demo"
-    }
           provisioner "file" {
 
     source      = "reg-suse-jml-script.sh"
