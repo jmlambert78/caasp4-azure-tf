@@ -162,13 +162,13 @@ resource "azurerm_virtual_machine" "caasp4tf-VMs" {
 
     os_profile {
         computer_name  = "caasp4tf-${var.list-nodes[count.index]}-vm"
-        admin_username = "jmlambert"
+        admin_username = var.caasp4_vms_username
     }
 
     os_profile_linux_config {
         disable_password_authentication = true
         ssh_keys {
-            path     = "/home/jmlambert/.ssh/authorized_keys"
+            path     = "/home/${var.caasp4_vms_username}/.ssh/authorized_keys"
             key_data = file(var.ssh_public_keys)
         }
     }
@@ -184,7 +184,7 @@ resource "azurerm_virtual_machine" "caasp4tf-VMs" {
     destination = "/tmp/script.sh"
 connection {
     type     = "ssh"
-    user     = "jmlambert"
+    user     = var.caasp4_vms_username
     host     =  azurerm_public_ip.caasp4tf-publicip[count.index].ip_address
     private_key = file(var.ssh_private_key_jml)
   }
@@ -195,7 +195,7 @@ connection {
     destination = "/tmp/bootstrap-caasp4.sh"
     connection {
       type     = "ssh"
-      user     = "jmlambert"
+      user     = var.caasp4_vms_username
       host     =  azurerm_public_ip.caasp4tf-publicip[count.index].ip_address
       private_key = file(var.ssh_private_key_jml)
       }
@@ -206,7 +206,7 @@ connection {
     destination = "/tmp/swap.sh"
     connection {
       type     = "ssh"
-      user     = "jmlambert"
+      user     = var.caasp4_vms_username
       host     =  azurerm_public_ip.caasp4tf-publicip[count.index].ip_address
       private_key = file(var.ssh_private_key_jml)
       }
@@ -217,7 +217,7 @@ connection {
     destination = "/tmp/nfsserver.sh"
     connection {
       type     = "ssh"
-      user     = "jmlambert"
+      user     = var.caasp4_vms_username
       host     =  azurerm_public_ip.caasp4tf-publicip[count.index].ip_address
       private_key = file(var.ssh_private_key_jml)
       }
@@ -231,7 +231,7 @@ connection {
     ]
     connection {
        type     = "ssh"
-       user     = "jmlambert"
+       user     = var.caasp4_vms_username
        host     = azurerm_public_ip.caasp4tf-publicip[count.index].ip_address
        private_key = file(var.ssh_private_key_jml)
 
@@ -282,7 +282,7 @@ resource "null_resource" "remote-exec-admin" {
       connection {
       agent       = false
       timeout     = "30m"
-      user     = "jmlambert"
+      user     = var.caasp4_vms_username
       host     = azurerm_public_ip.caasp4tf-publicip[0].ip_address
       private_key = file(var.ssh_private_key_jml)
     }
@@ -291,7 +291,7 @@ resource "null_resource" "remote-exec-admin" {
       "chmod +x /tmp/nfsserver.sh",   "sudo /tmp/nfsserver.sh"
     ]
     }
-    depends_on = [azurerm_virtual_machine_data_disk_attachment.caasp4-admin-datadisks[0]]
+    depends_on = [azurerm_virtual_machine_data_disk_attachment.caasp4-admin-datadisks]
 }
 # Mount data disks on nodes.
 resource "null_resource" "remote-exec-nodes" {
@@ -299,7 +299,7 @@ provisioner "remote-exec" {
 connection {
       agent       = false
       timeout     = "30m"
-      user     = "jmlambert"
+      user     = var.caasp4_vms_username
       host     = azurerm_public_ip.caasp4tf-publicip[2+count.index].ip_address
       private_key = file(var.ssh_private_key_jml)
     }
@@ -316,12 +316,12 @@ provisioner "remote-exec" {
 connection {
       agent       = false
       timeout     = "30m"
-      user     = "jmlambert"
+      user     = var.caasp4_vms_username
       host     = azurerm_public_ip.caasp4tf-publicip[0].ip_address
       private_key = file(var.ssh_private_key_jml)
     }
-    inline = ["ls",
-#      "chmod +x /tmp/bootstrap-caasp4.sh",   "/tmp/bootstrap-caasp4.sh"
+    inline = [
+      "chmod +x /tmp/bootstrap-caasp4.sh",   "/tmp/bootstrap-caasp4.sh"
     ]
 }
     depends_on = [null_resource.remote-exec-nodes,null_resource.remote-exec-admin]
@@ -329,7 +329,7 @@ connection {
 # collect the admin.conf file for kubeconfig .
 resource "null_resource" "local-exec-kubeconfig" {
 provisioner "local-exec" {
-command = "scp -i ${var.ssh_private_key_jml} jmlambert@${azurerm_public_ip.caasp4tf-publicip[0].ip_address}:/home/jmlambert/caaspV4/admin.conf ."
+command = "ssh-keyscan -t rsa ${azurerm_public_ip.caasp4tf-publicip[0].ip_address}  >> ~/.ssh/known_hosts;scp -i ${var.ssh_private_key_jml} ${var.caasp4_vms_username}@${azurerm_public_ip.caasp4tf-publicip[0].ip_address}:/home/${var.caasp4_vms_username}/caaspV4/admin.conf ."
 }
 depends_on = [null_resource.remote-exec-skuba]
 
