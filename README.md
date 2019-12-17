@@ -1,5 +1,5 @@
 # caasp4-azure-tf
-tf for caasp4 on azurerm
+tf resources for caasp4 deployment on azurerm
 ![Architecture Diagram](caasp4%20on%20azure.jpg?raw=true "Architecture Diagram")
 ## Prerequisite
 - Need for a DNS domain allocated (here jmllabsuse.com as example)
@@ -18,3 +18,25 @@ To plan for the deployment
 To deploy actually, you will have to agree on the set of actions.
 ## Terraform destroy
 To delete the resources managed by TF.
+# Files content
+## setenvs.sh-example
+Setup your variables content
+## caasp4.tf
+## keyset.pub
+Set of public keys to inject in all nodes vms
+## main.tf-example
+File to copy as main.tf and add your own values (registrations etc)
+## maindns.tf
+Create DNS domains public & private
+## mainlb.tf
+Create the Load balancer resources & rules
+## reg-suse-jml-script.sh-example
+Script to copy as reg-suse-jml-script.sh and add your SUSE reg elements & other params
+## swap.sh
+Script to set "cgroup_enable=memory swapaccount=1"
+## nfsserver.sh
+Mount newly attached data disk and for the admin node, start a nfs server there 
+## bootstrap-caasp4.sh
+Bootstrap CaaSP4 node with skuba
+Check the DNS names inside if you change other deployment urls
+
