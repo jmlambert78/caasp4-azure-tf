@@ -108,7 +108,7 @@ resource "azurerm_private_dns_a_record" "caasp4cfprivate" {
   records             = ["${azurerm_network_interface.caasp4tf-nics[1].ip_configuration[0].private_ip_address}"]
 }
 # add kube.cf for internal dns to master IP.
-resource "azurerm_private_dns_a_record" "caasp4cfprivate" {
+resource "azurerm_private_dns_a_record" "caasp4kubeprivate" {
   name                = "kube.${var.caasp4_dns_prefix}"
   zone_name           = azurerm_private_dns_zone.jmllabsuse-private.name
   resource_group_name = azurerm_private_dns_zone.jmllabsuse-private.resource_group_name
@@ -310,3 +310,29 @@ connection {
     count = 2
     depends_on = [azurerm_virtual_machine_data_disk_attachment.caasp4-datadisks]    
 }
+# bootstrap skuba on admin.
+resource "null_resource" "remote-exec-skuba" {
+provisioner "remote-exec" {
+connection {
+      agent       = false
+      timeout     = "30m"
+      user     = "jmlambert"
+      host     = azurerm_public_ip.caasp4tf-publicip[0].ip_address
+      private_key = file(var.ssh_private_key_jml)
+    }
+    inline = ["ls",
+#      "chmod +x /tmp/bootstrap-caasp4.sh",   "/tmp/bootstrap-caasp4.sh"
+    ]
+}
+    depends_on = [null_resource.remote-exec-nodes,null_resource.remote-exec-admin]
+}
+# collect the admin.conf file for kubeconfig .
+resource "null_resource" "local-exec-kubeconfig" {
+provisioner "local-exec" {
+command = "scp -i ${var.ssh_private_key_jml} jmlambert@${azurerm_public_ip.caasp4tf-publicip[0].ip_address}:/home/jmlambert/caaspV4/admin.conf ."
+}
+depends_on = [null_resource.remote-exec-skuba]
+
+}
+
+
