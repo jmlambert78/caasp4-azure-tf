@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 # Activate the suse caasp packages etc
 sudo SUSEConnect -r <yoursub> -e <youremail>
 sudo SUSEConnect -p sle-module-containers/15.1/x86_64 -r <yoursub>

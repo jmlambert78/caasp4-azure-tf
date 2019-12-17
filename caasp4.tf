@@ -1,5 +1,5 @@
 # Create a resource group if it does not exist
-resource "azurerm_resource_group" "caasp4tf-eu-rg" {
+resource "azurerm_resource_group" "caasp4tf-rg" {
     name     = var.caasp4_rg_name
     location = var.azure-region
 }
@@ -9,7 +9,7 @@ resource "azurerm_virtual_network" "caasp4tf-network" {
     name                = "caasp4tf-vnet"
     address_space       = ["10.0.0.0/16"]
     location            =  var.azure-region
-    resource_group_name = azurerm_resource_group.caasp4tf-eu-rg.name
+    resource_group_name = azurerm_resource_group.caasp4tf-rg.name
 }
 # to declare the private dns to the vnet
 resource "azurerm_private_dns_zone_virtual_network_link" "privatejmllab" {
@@ -23,7 +23,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "privatejmllab" {
 # Create subnet
 resource "azurerm_subnet" "caasp4tf-subnet" {
     name                 = "caasp4tf-subnet"
-    resource_group_name  = azurerm_resource_group.caasp4tf-eu-rg.name
+    resource_group_name  = azurerm_resource_group.caasp4tf-rg.name
     virtual_network_name = azurerm_virtual_network.caasp4tf-network.name
     address_prefix       = "10.0.1.0/24"
 }
@@ -35,7 +35,7 @@ variable "list-nodes" {
 resource "azurerm_public_ip" "caasp4tf-publicip" {
     name                         = "${var.list-nodes[count.index]}-PublicIP"
     location                     =  var.azure-region
-    resource_group_name          = azurerm_resource_group.caasp4tf-eu-rg.name
+    resource_group_name          = azurerm_resource_group.caasp4tf-rg.name
     allocation_method            = "Static"
     count                        = length(var.list-nodes)
 }
@@ -56,7 +56,7 @@ resource "azurerm_dns_a_record" "caasp4nodes" {
 resource "azurerm_network_security_group" "caasp4tf-nsg" {
     name                = "caasp4tf-NetworkSecurityGroup"
     location            =  var.azure-region
-    resource_group_name = azurerm_resource_group.caasp4tf-eu-rg.name
+    resource_group_name = azurerm_resource_group.caasp4tf-rg.name
 }
 variable "list-nsg-ports" {
    default = ["22","80","443","6443","7443","8443","4240","8472","10250","10256","30000-32767","2379-2380","2397","2793","2222"]
@@ -71,7 +71,7 @@ resource "azurerm_network_security_rule" "caasp4-nsg-rules" {
   destination_port_range      = var.list-nsg-ports[count.index]
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
-  resource_group_name         = azurerm_resource_group.caasp4tf-eu-rg.name
+  resource_group_name         = azurerm_resource_group.caasp4tf-rg.name
   network_security_group_name = azurerm_network_security_group.caasp4tf-nsg.name
   count                       =length(var.list-nsg-ports)
 }
@@ -79,7 +79,7 @@ resource "azurerm_network_security_rule" "caasp4-nsg-rules" {
 resource "azurerm_network_interface" "caasp4tf-nics" {
     name                      = "caasp4tf-${var.list-nodes[count.index]}-nic"
     location                  = var.azure-region
-    resource_group_name       = azurerm_resource_group.caasp4tf-eu-rg.name
+    resource_group_name       = azurerm_resource_group.caasp4tf-rg.name
     network_security_group_id = azurerm_network_security_group.caasp4tf-nsg.id
 
     ip_configuration {
@@ -121,7 +121,7 @@ resource "azurerm_private_dns_a_record" "caasp4kubeprivate" {
 resource "random_id" "randomId" {
     keepers = {
         # Generate a new ID only when a new resource group is defined
-        resource_group = azurerm_resource_group.caasp4tf-eu-rg.name
+        resource_group = azurerm_resource_group.caasp4tf-rg.name
     }
 
     byte_length = 8
@@ -130,7 +130,7 @@ resource "random_id" "randomId" {
 # Create storage account for boot diagnostics
 resource "azurerm_storage_account" "caasp4tf-storageaccount" {
     name                        = "diag${random_id.randomId.hex}"
-    resource_group_name         = azurerm_resource_group.caasp4tf-eu-rg.name
+    resource_group_name         = azurerm_resource_group.caasp4tf-rg.name
     location                    =  var.azure-region
     account_tier                = "Standard"
     account_replication_type    = "LRS"
@@ -140,7 +140,7 @@ resource "azurerm_storage_account" "caasp4tf-storageaccount" {
 resource "azurerm_virtual_machine" "caasp4tf-VMs" {
     name                  = "caasp4tf-${var.list-nodes[count.index]}-VM"
     location              =  var.azure-region
-    resource_group_name   = azurerm_resource_group.caasp4tf-eu-rg.name
+    resource_group_name   = azurerm_resource_group.caasp4tf-rg.name
     network_interface_ids = [azurerm_network_interface.caasp4tf-nics[count.index].id]
     vm_size               = "Standard_D4s_v3"
 
@@ -243,7 +243,7 @@ connection {
 resource "azurerm_managed_disk" "caasp4-datadisks" {
   name                 = "caasp4tf-${var.list-nodes[count.index+2]}-datadisk1"
   location              =  var.azure-region
-  resource_group_name   = azurerm_resource_group.caasp4tf-eu-rg.name
+  resource_group_name   = azurerm_resource_group.caasp4tf-rg.name
   storage_account_type = "Standard_LRS"
   create_option        = "Empty"
   disk_size_gb         = 100
@@ -262,7 +262,7 @@ resource "azurerm_virtual_machine_data_disk_attachment" "caasp4-datadisks" {
 resource "azurerm_managed_disk" "caasp4-admin-datadisks" {
   name                 = "caasp4tf-${var.list-nodes[count.index]}-datadisk1"
   location              =  var.azure-region
-  resource_group_name   = azurerm_resource_group.caasp4tf-eu-rg.name
+  resource_group_name   = azurerm_resource_group.caasp4tf-rg.name
   storage_account_type = "Standard_LRS"
   create_option        = "Empty"
   disk_size_gb         = 100
