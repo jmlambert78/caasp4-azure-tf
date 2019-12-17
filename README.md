@@ -1,5 +1,6 @@
 # caasp4-azure-tf
 tf for caasp4 on azurerm
+![Architecture Diagram](caasp4%20on%20azure.jpg?raw=true "Architecture Diagram")
 ## Prerequisite
 - Need for a DNS domain allocated (here jmllabsuse.com as example)
 - Change this value in the main.tf file
