@@ -101,7 +101,7 @@ resource "azurerm_private_dns_a_record" "caasp4nodesprivate" {
 }
 # add *.cf for internal dns to master IP.
 resource "azurerm_private_dns_a_record" "caasp4cfprivate" {
-  name                = "*.cf"
+  name                = "*.${var.caasp4_dns_prefix}"
   zone_name           = azurerm_private_dns_zone.jmllabsuse-private.name
   resource_group_name = azurerm_private_dns_zone.jmllabsuse-private.resource_group_name
   ttl                 = 300

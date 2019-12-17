@@ -22,14 +22,14 @@ output "public_ip_address-lb" {
   value = data.azurerm_public_ip.caasp4tf-ip-lb.ip_address
 }
 resource "azurerm_dns_a_record" "lb-kube" {
-  name                = "kube.cf1"
+  name                = "kube.${var.caasp4_dns_prefix}"
   zone_name           = azurerm_dns_zone.jmllabsuse.name
   resource_group_name = azurerm_dns_zone.jmllabsuse.resource_group_name
   ttl                 = 300
   records             = ["${data.azurerm_public_ip.caasp4tf-ip-lb.ip_address}"]
 }
 resource "azurerm_dns_a_record" "lb_cf" {
-  name                = "*.cf1.private"
+  name                = "*.${var.caasp4_dns_prefix}"
   zone_name           = azurerm_dns_zone.jmllabsuse.name
   resource_group_name = azurerm_dns_zone.jmllabsuse.resource_group_name
   ttl                 = 300

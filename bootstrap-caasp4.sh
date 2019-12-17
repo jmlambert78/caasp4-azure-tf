@@ -2,7 +2,7 @@ eval "$(ssh-agent -s)"
 ssh-add
 PREFIX="caasp4"
 SUFFIX=".cf1"
-DOMAIN=".private.jmllabsuse.com"
+DOMAIN=".jmllabsuse.com"
 MASTER1=$PREFIX"-master1"$SUFFIX$DOMAIN
 NODE1=$PREFIX"-node1"$SUFFIX$DOMAIN
 NODE2=$PREFIX"-node2"$SUFFIX$DOMAIN
