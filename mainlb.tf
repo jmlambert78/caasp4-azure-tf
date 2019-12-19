@@ -1,6 +1,6 @@
 # List of lb Fports to set as lb rules & lb probes
-variable "lb-list-ports"{
- default =["22","443","6443","8443","80","2222","2793"] 
+variable "lb-list-ports" {
+  default = ["22", "443", "6443", "8443", "80", "2222", "2793"]
 }
 
 resource "azurerm_resource_group" "caasp4tf-lb-rg" {
@@ -14,7 +14,7 @@ resource "azurerm_public_ip" "caasp4tf-ip-lb" {
   resource_group_name = azurerm_resource_group.caasp4tf-lb-rg.name
   allocation_method   = "Static"
 }
-  data "azurerm_public_ip" "caasp4tf-ip-lb" {
+data "azurerm_public_ip" "caasp4tf-ip-lb" {
   name                = azurerm_public_ip.caasp4tf-ip-lb.name
   resource_group_name = azurerm_resource_group.caasp4tf-lb-rg.name
 }
@@ -30,6 +30,20 @@ resource "azurerm_dns_a_record" "lb-kube" {
 }
 resource "azurerm_dns_a_record" "lb_cf" {
   name                = "*.${var.caasp4_dns_prefix}"
+  zone_name           = azurerm_dns_zone.jmllabsuse.name
+  resource_group_name = azurerm_dns_zone.jmllabsuse.resource_group_name
+  ttl                 = 300
+  records             = ["${data.azurerm_public_ip.caasp4tf-ip-lb.ip_address}"]
+}
+resource "azurerm_dns_a_record" "lb_uaa" {
+  name                = "uaa.${var.caasp4_dns_prefix}"
+  zone_name           = azurerm_dns_zone.jmllabsuse.name
+  resource_group_name = azurerm_dns_zone.jmllabsuse.resource_group_name
+  ttl                 = 300
+  records             = ["${data.azurerm_public_ip.caasp4tf-ip-lb.ip_address}"]
+}
+resource "azurerm_dns_a_record" "lb_uaa_star" {
+  name                = "*.uaa.${var.caasp4_dns_prefix}"
   zone_name           = azurerm_dns_zone.jmllabsuse.name
   resource_group_name = azurerm_dns_zone.jmllabsuse.resource_group_name
   ttl                 = 300
