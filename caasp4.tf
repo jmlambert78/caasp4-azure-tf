@@ -79,7 +79,7 @@ resource "azurerm_network_security_group" "caasp4tf-nsg" {
   resource_group_name = azurerm_resource_group.caasp4tf-rg.name
 }
 variable "list-nsg-ports" {
-  default = ["22", "80", "443", "6443", "7443", "8443", "2393", "2222", "2397", "2793", "4240", "8472", "10250", "10256", "30000-32767", "2379-2380"]
+  default = ["22", "80", "443", "6443", "7443", "8443", "2393", "2222", "2397", "2793", "4240", "8472", "10250", "10256", "30000-32767", "2379-2380","32000","32001"]
 }
 
 resource "azurerm_network_security_rule" "caasp4-nsg-rules" {
@@ -178,6 +178,25 @@ resource "azurerm_private_dns_a_record" "caasp4cfprivate" {
   ttl                 = 300
   records             = ["${azurerm_network_interface.caasp4tf-nics[1].ip_configuration[0].private_ip_address}"]
 }
+# add uaa.cf for internal dns to master IP.
+resource "azurerm_private_dns_a_record" "caasp4cfprivate-uaa" {
+  name                = "uaa.${var.caasp4_dns_prefix}"
+  zone_name           = azurerm_private_dns_zone.jmllabsuse-private.name
+  resource_group_name = azurerm_private_dns_zone.jmllabsuse-private.resource_group_name
+  ttl                 = 300
+  records             = ["${azurerm_network_interface.caasp4tf-nics[1].ip_configuration[0].private_ip_address}"]
+}
+
+# add *.uaa.cf for internal dns to master IP.
+resource "azurerm_private_dns_a_record" "caasp4cfprivate-uaa-star" {
+  name                = "*.uaa.${var.caasp4_dns_prefix}"
+  zone_name           = azurerm_private_dns_zone.jmllabsuse-private.name
+  resource_group_name = azurerm_private_dns_zone.jmllabsuse-private.resource_group_name
+  ttl                 = 300
+  records             = ["${azurerm_network_interface.caasp4tf-nics[1].ip_configuration[0].private_ip_address}"]
+}
+
+
 # add kube.cf for internal dns to master IP.
 resource "azurerm_private_dns_a_record" "caasp4kubeprivate" {
   name                = "kube.${var.caasp4_dns_prefix}"

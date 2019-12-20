@@ -1,7 +1,7 @@
 eval "$(ssh-agent -s)"
 ssh-add
 PREFIX="caasp4"
-SUFFIX=".cf1"
+SUFFIX=".cap4"
 DOMAIN=".jmllabsuse.com"
 MASTER1=$PREFIX"-master1"$SUFFIX$DOMAIN
 NODE1=$PREFIX"-node1"$SUFFIX$DOMAIN
@@ -16,7 +16,7 @@ ssh-keyscan -t rsa $NODE2  >> ~/.ssh/known_hosts
 skuba  cluster init --control-plane $MASTER1  caaspV4
 cd caaspV4
 # add a SAN route in addition 
-sed -i '/  certSANs/a\ \ \ \ - kube.cf1.jmllabsuse.com\n' kubeadm-init.conf
+sed -i '/  certSANs/a\ \ \ \ - kube.cap4.jmllabsuse.com\n' kubeadm-init.conf
 # Edit the kubeadm-init.conf to add any SAN entry for certificates generation during the bootstrap.
 skuba node bootstrap --sudo --user jmlambert  --target $MASTER1 master1 -v10
 skuba node join --role worker --sudo --user jmlambert  --target $NODE1 node1 -v10
