@@ -12,13 +12,14 @@ resource "azurerm_virtual_network" "caasp4tf-network" {
   resource_group_name = azurerm_resource_group.caasp4tf-rg.name
 }
 # to declare the private dns to the vnet
+/*
 resource "azurerm_private_dns_zone_virtual_network_link" "privatejmllab" {
   name                  = "private-jmllab-dns-link"
   resource_group_name   = azurerm_private_dns_zone.jmllabsuse-private.resource_group_name
   private_dns_zone_name = azurerm_private_dns_zone.jmllabsuse-private.name
   virtual_network_id    = azurerm_virtual_network.caasp4tf-network.id
 }
-
+*/
 
 # Create subnet
 resource "azurerm_subnet" "caasp4tf-subnet" {

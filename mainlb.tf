@@ -83,6 +83,7 @@ resource "azurerm_lb_rule" "lb-rules" {
   backend_port                   = var.lb-list-ports[count.index]
   backend_address_pool_id        = azurerm_lb_backend_address_pool.caasp4-lb-backpool.id
   frontend_ip_configuration_name = "PublicIPAddress"
+  probe_id                       = azurerm_lb_probe.lb-probes[count.index].id
   count                          = length(var.lb-list-ports)
 }
 resource "azurerm_lb_probe" "lb-probes" {
